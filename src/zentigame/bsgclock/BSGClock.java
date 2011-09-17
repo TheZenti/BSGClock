@@ -459,7 +459,7 @@ public class BSGClock implements Runnable {
 		for (int i = 0; i < 60; i++) {
 			GL11.glRotatef(angle, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
-			//As simple rotating along the center doesn't work so well, 
+			//As simply rotating along the center doesn't work so well, 
 			//I had to work with sine and cosine in order to get appropriate co-ordinates.
 			for (double t = degrees90R; t < degrees90R + 10 * angleR ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
