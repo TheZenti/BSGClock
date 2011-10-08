@@ -240,7 +240,12 @@ public class MainMenu {
 	}
 
 	private Image retrieveIcon() {
-		File file = new File(System.getProperty("launch4j.exefile"));
+		File file;
+		try {
+			file = new File(System.getProperty("launch4j.exefile"));
+		} catch (Exception e) {
+			return null;
+		}
 	
 	    // Get metadata and create an icon
 	    sun.awt.shell.ShellFolder sf = null;

@@ -1,6 +1,9 @@
 package zentigame.bsgclock;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -80,7 +83,9 @@ public class BSGClock implements Runnable {
 		// (default)
 		Display.setTitle(GAME_TITLE);
 		Display.setFullscreen(true);
-		Display.setIcon(retrieveIcon());
+		ByteBuffer[] icon = retrieveIcon();
+		if (icon != null)
+			Display.setIcon(icon);
 	
 		// Enable vsync if we can (due to how OpenGL works, it cannot be
 		// guarenteed to always work)
@@ -114,6 +119,8 @@ public class BSGClock implements Runnable {
 			if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
 				finished = true;
 			}
+			if (Keyboard.isKeyDown(Keyboard.KEY_F12))
+				saveFrameAsPNG(Long.toString(countdown) + ".png");
 	
 			// The window is in the foreground, so we should play the game
 			if (Display.isActive()) {
@@ -460,7 +467,7 @@ public class BSGClock implements Runnable {
 			GL11.glRotatef(angle, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
 			//As simply rotating along the center doesn't work so well, 
-			//I had to work with sine and cosine in order to get appropriate co-ordinates.
+			//working with sine and cosine in order to get appropriate co-ordinates was necessary.
 			for (double t = degrees90R; t < degrees90R + 10 * angleR ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
@@ -743,14 +750,19 @@ public class BSGClock implements Runnable {
 	}
 	
 	private ByteBuffer[] retrieveIcon() {
-		File file = new File(System.getProperty("launch4j.exefile"));
+		File file;
+		try {
+			file = new File(System.getProperty("launch4j.exefile"));
+		} catch (Exception e) {
+			return null;
+		}
 	
 	    // Get metadata and create an icon
 	    sun.awt.shell.ShellFolder sf = null;
 		try {
 			sf = sun.awt.shell.ShellFolder.getShellFolder(file);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			return null;
 		}
 	    Image img = sf.getIcon(true);
 	    int len=img.getHeight(null)*img.getWidth(null);
@@ -777,5 +789,65 @@ public class BSGClock implements Runnable {
 	    ByteBuffer[] buf = {temp};
 	    return buf;
 	}
-
+	
+	private void saveFrameAsPNG(String fileName ) {
+        
+        // Open File
+        if( fileName == null ) {
+            
+            fileName = new String( "Screenshot.png" ); 
+        }
+        
+        File outputFile = new File( fileName );             
+        
+        try {
+            javax.imageio.ImageIO.write( takeScreenshot(), "PNG", outputFile );
+        
+        } catch (Exception e) {
+            System.out.println( "Error: ImageIO.write." );
+            e.printStackTrace();
+        }
+    }
+    
+    
+    private BufferedImage takeScreenshot(){
+        
+        int frameWidth = Display.getDisplayMode().getWidth();
+        int frameHeight = Display.getDisplayMode().getHeight();
+        
+        BufferedImage screenshot = null;
+         // allocate space for RBG pixels
+        ByteBuffer fb = ByteBuffer.allocateDirect(frameWidth*frameHeight*3);    
+            
+         int[] pixels = new int[frameWidth * frameHeight];
+         int bindex;
+        
+         // grab a copy of the current frame contents as RGB
+         GL11.glReadPixels(0, 0, frameWidth, frameHeight, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, fb);
+         
+                 
+         // convert RGB data in ByteBuffer to integer array
+         for (int i=0; i < pixels.length; i++) {
+             bindex = i * 3;
+             pixels[i] = ((fb.get(bindex) << 16))  + ((fb.get(bindex+1) << 8))  + ((fb.get(bindex+2) << 0));
+         }
+        
+         // Create a BufferedImage with the RGB pixels then save as PNG
+         try {
+             screenshot = new BufferedImage(frameWidth, frameHeight, BufferedImage.TYPE_INT_RGB);
+             screenshot.setRGB(0, 0, frameWidth, frameHeight, pixels, 0, frameWidth);     
+             
+             
+             // * Flip Image Y Axis *
+             AffineTransform tx = AffineTransform.getScaleInstance(1, -1); 
+             tx.translate(0, -screenshot.getHeight(null)); 
+             AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR); 
+             screenshot = op.filter(screenshot, null); 
+             
+         }
+         catch (Exception e) {
+             System.out.println("ScreenShot() exception: " +e);
+         }
+         return screenshot;
+    }
 }
