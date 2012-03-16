@@ -673,8 +673,10 @@ public class BSGClock implements Runnable {
 				showSign = true;
 				break;
 			case 10:
-				counter.scheduleAtFixedRate(new CountDown(), 1000, 10);
-				countdownSetter.cancel();
+				try {
+					counter.scheduleAtFixedRate(new CountDown(), 1000, 10);
+					countdownSetter.cancel();	
+				} catch (Exception e) {}
 				cancel();
 				break;
 			}
