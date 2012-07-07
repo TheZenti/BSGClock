@@ -1,15 +1,12 @@
 package zentigame.bsgclock;
 
-import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.PixelGrabber;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.lwjgl.input.Keyboard;
@@ -20,14 +17,22 @@ import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
+import de.matthiasmann.twl.utils.PNGDecoder;
+
 public class BSGClock implements Runnable {
+	
+	private static float ANGLE = (float) (0.5 % 360);
+	private static float ANGLER = (float) (ANGLE * (Math.PI / 180));
+	private static float DEGREES90R = (float) (90 * (Math.PI / 180));
+	
+	private static final String GAME_TITLE = "BSGClock";
+	private static final int FRAMERATE = 60;
+	
+	private MainMenu parent;
 
 	private Audio clockRunning;
 	private Audio clockExpired;
 	private Audio clockTick;
-	
-	private static final String GAME_TITLE = "BSGClock";
-	private static final int FRAMERATE = 60;
 	
 	private int width, height;
 	private float bitSize;
@@ -38,12 +43,9 @@ public class BSGClock implements Runnable {
 	private boolean playTick;
 	private boolean keepRunning;
 	private boolean finished;
+	private boolean fullScreen;
 	
 	private boolean showSign;
-	
-	private static float angle = (float) (0.5 % 360);
-	private static float angleR = (float) (angle * (Math.PI / 180));
-	private static float degrees90R = (float) (90 * (Math.PI / 180));
 
 	private float[] currentColor;
 
@@ -51,9 +53,10 @@ public class BSGClock implements Runnable {
 
 	private Timer countdownSetter, counter, colorFlash;
 
-	public BSGClock(String hours, String minutes, String seconds,
+	public BSGClock(MainMenu parentWindow, String hours, String minutes, String seconds,
 			boolean playSoundOnExpiration, boolean playTickSoundEverySecond,
-			boolean keepClockRunningAfterExpiration) {
+			boolean keepClockRunningAfterExpiration, boolean fullscreen) {
+		parent = parentWindow;
 		initialHours = hours;
 		initialMinutes = minutes;
 		initialSeconds = seconds;
@@ -69,6 +72,7 @@ public class BSGClock implements Runnable {
 		currentColor[1] = 0.67058823529411764705882352941176f;
 		currentColor[2] = 0.06666666666666666666666666666667f;
 		showSign = false;
+		fullScreen = fullscreen;
 		try {
 			clockRunning = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockRunning.ogg"));
 			clockExpired = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockExpired.ogg"));
@@ -82,10 +86,10 @@ public class BSGClock implements Runnable {
 		// Create a fullscreen window with 1:1 orthographic 2D projection
 		// (default)
 		Display.setTitle(GAME_TITLE);
-		Display.setFullscreen(true);
-		ByteBuffer[] icon = retrieveIcon();
-		if (icon != null)
-			Display.setIcon(icon);
+		Display.setFullscreen(fullScreen);
+		try {
+			Display.setIcon(retrieveIcon());
+		} catch (Exception e) {}
 	
 		// Enable vsync if we can (due to how OpenGL works, it cannot be
 		// guarenteed to always work)
@@ -145,6 +149,7 @@ public class BSGClock implements Runnable {
 		}
 		Display.destroy();
 		counter.cancel();
+		parent.setStartButtonState(true);
 	}
 
 	public void render() {
@@ -464,62 +469,62 @@ public class BSGClock implements Runnable {
 		//seconds
 		GL11.glPushMatrix();
 		for (int i = 0; i < 60; i++) {
-			GL11.glRotatef(angle, 0, 0, 1.0f);
+			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
 			//As simply rotating along the center doesn't work so well, 
 			//working with sine and cosine in order to get appropriate co-ordinates was necessary.
-			for (double t = degrees90R; t < degrees90R + 10 * angleR ; t += 0.001D) {
+			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 62, circleY * sliceLength * 62);
 			}
-			for (double t = degrees90R + 10 * angleR; t > degrees90R; t -= 0.001D) {
+			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 52, circleY * sliceLength * 52);
 			}
 			GL11.glEnd();
-			GL11.glRotatef(11 * angle, 0, 0, 1.0f);
+			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
 		
 		//minutes
 		GL11.glPushMatrix();
 		for (int i = 0; i < 60; i++) {
-			GL11.glRotatef(angle, 0, 0, 1.0f);
+			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = degrees90R; t < degrees90R + 10 * angleR ; t += 0.001D) {
+			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 49, circleY * sliceLength * 49);
 			}
-			for (double t = degrees90R + 10 * angleR; t > degrees90R; t -= 0.001D) {
+			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 29, circleY * sliceLength * 29);
 			}
 			GL11.glEnd();
-			GL11.glRotatef(11 * angle, 0, 0, 1.0f);
+			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
 		
 		//hours
 		GL11.glPushMatrix();
 		for (int i = 0; i < 12; i++) {
-			GL11.glRotatef(angle, 0, 0, 1.0f);
+			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = degrees90R; t < degrees90R + 58 * angleR ; t += 0.001D) {
+			for (double t = DEGREES90R; t < DEGREES90R + 58 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 26, circleY * sliceLength * 26);
 			}
-			for (double t = degrees90R + 58 * angleR; t > degrees90R; t -= 0.001D) {
+			for (double t = DEGREES90R + 58 * ANGLER; t > DEGREES90R; t -= 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 6, circleY * sliceLength * 6);
 			}
 			GL11.glEnd();
-			GL11.glRotatef(59 * angle, 0, 0, 1.0f);
+			GL11.glRotatef(59 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
 	}
@@ -528,62 +533,62 @@ public class BSGClock implements Runnable {
 		//seconds
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[2]; i < j && i < 60; i++) {
-			GL11.glRotatef(angle, 0, 0, 1.0f);
+			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
 			//As simple rotating along the center doesn't work so well, 
 			//I had to work with sine and cosine in order to get appropriate co-ordinates.
-			for (double t = degrees90R; t < degrees90R + 10 * angleR ; t += 0.001D) {
+			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 62, circleY * sliceLength * 62);
 			}
-			for (double t = degrees90R + 10 * angleR; t > degrees90R; t -= 0.001D) {
+			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 52, circleY * sliceLength * 52);
 			}
 			GL11.glEnd();
-			GL11.glRotatef(11 * angle, 0, 0, 1.0f);
+			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
 		
 		//minutes
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[1]; i < j && i < 60; i++) {
-			GL11.glRotatef(angle, 0, 0, 1.0f);
+			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = degrees90R; t < degrees90R + 10 * angleR ; t += 0.001D) {
+			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 49, circleY * sliceLength * 49);
 			}
-			for (double t = degrees90R + 10 * angleR; t > degrees90R; t -= 0.001D) {
+			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 29, circleY * sliceLength * 29);
 			}
 			GL11.glEnd();
-			GL11.glRotatef(11 * angle, 0, 0, 1.0f);
+			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
 		
 		//hours
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[0]; i < j && i < 12; i++) {
-			GL11.glRotatef(angle, 0, 0, 1.0f);
+			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = degrees90R; t < degrees90R + 58 * angleR ; t += 0.001D) {
+			for (double t = DEGREES90R; t < DEGREES90R + 58 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 26, circleY * sliceLength * 26);
 			}
-			for (double t = degrees90R + 58 * angleR; t > degrees90R; t -= 0.001D) {
+			for (double t = DEGREES90R + 58 * ANGLER; t > DEGREES90R; t -= 0.001D) {
 				double circleX = java.lang.Math.cos(t);
 				double circleY = java.lang.Math.sin(t);
 				GL11.glVertex2d(circleX * sliceLength * 6, circleY * sliceLength * 6);
 			}
 			GL11.glEnd();
-			GL11.glRotatef(59 * angle, 0, 0, 1.0f);
+			GL11.glRotatef(59 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
 	}
@@ -749,45 +754,32 @@ public class BSGClock implements Runnable {
 		}
 	}
 	
-	private ByteBuffer[] retrieveIcon() {
-		File file;
-		try {
-			file = new File(System.getProperty("launch4j.exefile"));
-		} catch (Exception e) {
-			return null;
-		}
-	
-	    // Get metadata and create an icon
-	    sun.awt.shell.ShellFolder sf = null;
-		try {
-			sf = sun.awt.shell.ShellFolder.getShellFolder(file);
-		} catch (FileNotFoundException e) {
-			return null;
-		}
-	    Image img = sf.getIcon(true);
-	    int len=img.getHeight(null)*img.getWidth(null);
-	      ByteBuffer temp=ByteBuffer.allocateDirect(len<<2);;
-	      temp.order(ByteOrder.LITTLE_ENDIAN);
-
-	      int[] pixels=new int[len];
-
-	      PixelGrabber pg=new PixelGrabber(img, 0, 0, img.getWidth(null), img.getHeight(null), pixels, 0, img.getWidth(null));
-
-	      try {
-	         pg.grabPixels();
-	      } catch (InterruptedException e) {
-	      }
-
-	      for (int i=0; i<len; i++) {
-	         int pos=i<<2;
-	         int texel=pixels[i];
-	         if (texel!=0) {
-	            texel|=0xff000000;
-	         }
-	         temp.putInt(pos, texel);
-	      }
-	    ByteBuffer[] buf = {temp};
-	    return buf;
+	private ByteBuffer[] retrieveIcon() throws IOException {
+		InputStream is = parent.getClass().getResource("/zentigame/bsgclock/BSGClock.png").openStream();
+		ByteBuffer b32 = null, b16 = null;
+		
+        try {
+            PNGDecoder decoder = new PNGDecoder(is);
+            ByteBuffer bb = ByteBuffer.allocateDirect(decoder.getWidth()*decoder.getHeight()*4);
+            decoder.decode(bb, decoder.getWidth()*4, PNGDecoder.Format.RGBA);
+            bb.flip();
+            b32 = bb;
+        } finally {
+            is.close();
+        }
+        
+        is = parent.getClass().getResource("/zentigame/bsgclock/BSGClock16.png").openStream();
+        try {
+            PNGDecoder decoder = new PNGDecoder(is);
+            ByteBuffer bb = ByteBuffer.allocateDirect(decoder.getWidth()*decoder.getHeight()*4);
+            decoder.decode(bb, decoder.getWidth()*4, PNGDecoder.Format.RGBA);
+            bb.flip();
+            b16 = bb;
+        } finally {
+            is.close();
+        }
+        
+        return new ByteBuffer[] {b16, b32};
 	}
 	
 	private void saveFrameAsPNG(String fileName ) {
