@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -67,10 +68,7 @@ public class BSGClock implements Runnable {
 		countdownSetter = new Timer();
 		counter = new Timer();
 		colorFlash = new Timer();
-		currentColor = new float[3];
-		currentColor[0] = 1f;
-		currentColor[1] = 0.67058823529411764705882352941176f;
-		currentColor[2] = 0.06666666666666666666666666666667f;
+		currentColor = new float[] {1f, 0.67058823529411764705882352941176f, 0.06666666666666666666666666666667f};
 		showSign = false;
 		fullScreen = fullscreen;
 		try {
@@ -87,15 +85,17 @@ public class BSGClock implements Runnable {
 		// (default)
 		Display.setTitle(GAME_TITLE);
 		Display.setFullscreen(fullScreen);
+		Display.setResizable(!fullScreen);
 		try {
 			Display.setIcon(retrieveIcon());
 		} catch (Exception e) {}
-	
+		
 		// Enable vsync if we can (due to how OpenGL works, it cannot be
 		// guarenteed to always work)
 		Display.setVSyncEnabled(true);
 	
 		Display.create();
+		System.out.println("Initializing countdown window, " + Display.getWidth() + "x" + Display.getHeight() + ", " + ((Display.isFullscreen()) ? "fullscreen mode" : "window mode"));
 		height = Display.getDisplayMode().getHeight();
 		width = Display.getDisplayMode().getWidth();
 		partHeight = height / 2;
@@ -116,6 +116,18 @@ public class BSGClock implements Runnable {
 			// the
 			// scenes work, and also displays the rendered output
 			Display.update();
+			
+			if(Display.wasResized())
+			{
+				height = Display.getHeight();
+				width = Display.getWidth();
+				// Debug call for Display resolution
+				// System.out.println("Resolution: " + height + "x" + width);
+				partHeight = height / 2;
+				sliceLength = partHeight / 152;
+				bitSize = width / 120;
+				GL11.glViewport(0, 0, width, height);
+			}
 	
 			if (Display.isCloseRequested()) {
 				finished = true;
@@ -150,13 +162,14 @@ public class BSGClock implements Runnable {
 		Display.destroy();
 		counter.cancel();
 		parent.setStartButtonState(true);
+		parent.cleanClockThread();
 	}
 
 	public void render() {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-		GL11.glOrtho(0, Display.getDisplayMode().getWidth(), 0, Display
-				.getDisplayMode().getHeight(), -1, 1);
+		GL11.glOrtho(0, Display.getWidth(), 0, Display
+				.getHeight(), -1, 1);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		// clear the screen
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
@@ -660,8 +673,10 @@ public class BSGClock implements Runnable {
 				showSign = true;
 				break;
 			case 10:
-				counter.scheduleAtFixedRate(new CountDown(), 1000, 10);
-				countdownSetter.cancel();
+				try {
+					counter.scheduleAtFixedRate(new CountDown(), 1000, 10);
+					countdownSetter.cancel();	
+				} catch (Exception e) {}
 				cancel();
 				break;
 			}
