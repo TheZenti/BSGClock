@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.PixelFormat;
 
 import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
@@ -94,7 +95,7 @@ public class BSGClock implements Runnable {
 		// guarenteed to always work)
 		Display.setVSyncEnabled(true);
 	
-		Display.create();
+		Display.create(new PixelFormat(8,0,0,16));
 		System.out.println("Initializing countdown window, " + Display.getWidth() + "x" + Display.getHeight() + ", " + ((Display.isFullscreen()) ? "fullscreen mode" : "window mode"));
 		height = Display.getDisplayMode().getHeight();
 		width = Display.getDisplayMode().getWidth();
