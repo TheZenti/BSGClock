@@ -12,7 +12,7 @@ import zentigame.AboutDialog;
 import zentigame.SwingFunctions;
 
 public class MainMenu {
-	private static final String version = "1.3.0";
+	private static final String version = "1.4.0";
 	
 	//Workaround for ActionListeners
 	private MainMenu self;
