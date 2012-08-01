@@ -95,7 +95,13 @@ public class BSGClock implements Runnable {
 		// guarenteed to always work)
 		Display.setVSyncEnabled(true);
 	
-		Display.create(new PixelFormat(8,0,0,16));
+		try{
+			Display.create(new PixelFormat(8,0,0,16));
+		}
+		catch(Exception e)
+		{
+			Display.create();
+		}
 		System.out.println("Initializing countdown window, " + Display.getWidth() + "x" + Display.getHeight() + ", " + ((Display.isFullscreen()) ? "fullscreen mode" : "window mode"));
 		height = Display.getDisplayMode().getHeight();
 		width = Display.getDisplayMode().getWidth();
