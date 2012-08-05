@@ -216,29 +216,29 @@ public class MainMenu {
 		//Add the window components to the content pane
 		
 		//Countdown time fields
-		SwingFunctions.addGBCToCP(cPane, hours, 0,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
-		SwingFunctions.addGBCToCP(cPane, colon1, 1,0);
-		SwingFunctions.addGBCToCP(cPane, minutes, 2,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
-		SwingFunctions.addGBCToCP(cPane, colon2, 3,0);
-		SwingFunctions.addGBCToCP(cPane, seconds, 4,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
+		SF.addGBCToCP(cPane, hours, 0,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
+		SF.addGBCToCP(cPane, colon1, 1,0);
+		SF.addGBCToCP(cPane, minutes, 2,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
+		SF.addGBCToCP(cPane, colon2, 3,0);
+		SF.addGBCToCP(cPane, seconds, 4,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
 		
 		//Field descriptors
-		SwingFunctions.addGBCToCP(cPane, hLabel, 0,1);
-		SwingFunctions.addGBCToCP(cPane, mLabel, 2,1);
-		SwingFunctions.addGBCToCP(cPane, sLabel, 4,1);
+		SF.addGBCToCP(cPane, hLabel, 0,1);
+		SF.addGBCToCP(cPane, mLabel, 2,1);
+		SF.addGBCToCP(cPane, sLabel, 4,1);
 
 		//Checkboxes
-		SwingFunctions.addGBCToCP(cPane, playSound, 0,2,6);
-		SwingFunctions.addGBCToCP(cPane, playTick, 0,3,6);
-		SwingFunctions.addGBCToCP(cPane, keepRunning, 0,4,6);
-		SwingFunctions.addGBCToCP(cPane, fullscreen, 0,5,6);
+		SF.addGBCToCP(cPane, playSound, 0,2,6);
+		SF.addGBCToCP(cPane, playTick, 0,3,6);
+		SF.addGBCToCP(cPane, keepRunning, 0,4,6);
+		SF.addGBCToCP(cPane, fullscreen, 0,5,6);
 		
 		//Buttons
-		SwingFunctions.addGBCToCP(cPane, startButton, 0,6,6);
-		SwingFunctions.addGBCToCP(cPane, aboutButton, 0,7,6);
+		SF.addGBCToCP(cPane, startButton, 0,6,6);
+		SF.addGBCToCP(cPane, aboutButton, 0,7,6);
 
 		//Status label
-		SwingFunctions.addGBCToCP(cPane, statusLabel, 0,8,6);
+		SF.addGBCToCP(cPane, statusLabel, 0,8,6);
 	}
 	
 	void setStartButtonState(boolean state) {
