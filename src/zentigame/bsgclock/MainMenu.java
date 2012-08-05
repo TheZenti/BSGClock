@@ -8,8 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import zentigame.AboutDialog;
-import zentigame.SwingFunctions;
+import zentigame.*;
 
 public class MainMenu {
 	private static final String version = "1.4.0";
