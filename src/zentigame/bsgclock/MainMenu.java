@@ -36,6 +36,20 @@ public class MainMenu {
 	
 	private Thread clockThread;
 	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		new MainMenu().run(args);
+	}
+
+	private void run(String args[]) {
+		//retrieveIcon();
+		
+		mainMenu.pack();
+		mainMenu.setVisible(true);
+	}
+	
 	public MainMenu() {
 		try {
 		    // Set System L&F
@@ -247,20 +261,6 @@ public class MainMenu {
 	
 	Image getIcon() {
 		return icon;
-	}
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		new MainMenu().run(args);
-	}
-
-	private void run(String args[]) {
-		//retrieveIcon();
-		
-		mainMenu.pack();
-		mainMenu.setVisible(true);
 	}
 
 }
