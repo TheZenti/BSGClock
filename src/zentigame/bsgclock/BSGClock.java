@@ -635,8 +635,7 @@ public class BSGClock implements Runnable {
 		public void run() {
 			switch (step) {
 			case 0:
-				Thread clockRunningThread = new Thread(new SoundEngine(1));
-				clockRunningThread.start();
+				if (playSound) clockRunning.playAsSoundEffect(1.0f, 1.0f, false);
 				countdown = numbers[0];
 				break;
 			case 1:
@@ -697,14 +696,22 @@ public class BSGClock implements Runnable {
 			countdown++;
 			if (playTick) {
 				if ((countdown % 100) == 0) {
-					Thread clockTickThread = new Thread(new SoundEngine(3));
-					clockTickThread.start();
+					if (playSound) clockTick.playAsSoundEffect(1.0f, 1.0f, false);
 				}
 			}
 			if (countdown == 0) {
-					Thread clockExpiredThread = new Thread(new SoundEngine(2));
-					clockExpiredThread.start();
-					colorFlash.scheduleAtFixedRate(new FlashingDigitalClock(), 0, 8);
+				if (playSound)
+				{
+					for(int i = 0; i < 3; i++) {
+						clockExpired.playAsSoundEffect(1.0f, 1.0f, false);
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				colorFlash.scheduleAtFixedRate(new FlashingDigitalClock(), 0, 8);
 				if (!keepRunning) {
 					counter.cancel();
 				}
@@ -741,37 +748,6 @@ public class BSGClock implements Runnable {
 			if (iteration == 9) {
 				colorFlash.cancel();
 				cancel();
-			}
-		}
-	}
-	
-	class SoundEngine implements Runnable {
-		private int toPlay;
-		
-		public SoundEngine(int toPlay) {
-			this.toPlay = toPlay;
-		}
-		@Override
-		public void run() {
-			if (playSound) {
-				switch (toPlay) {
-				case 1:
-					clockRunning.playAsSoundEffect(1.0f, 1.0f, false);
-					break;
-				case 2:
-					for(int i = 0; i < 3; i++) {
-						clockExpired.playAsSoundEffect(1.0f, 1.0f, false);
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-					break;
-				case 3:
-					clockTick.playAsSoundEffect(1.0f, 1.0f, false);
-					break;
-				}
 			}
 		}
 	}
