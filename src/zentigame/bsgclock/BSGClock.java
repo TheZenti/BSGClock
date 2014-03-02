@@ -21,6 +21,8 @@ import org.newdawn.slick.util.ResourceLoader;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 
+
+//TODO: Overlay clock, which minimizes on a key.
 public class BSGClock implements Runnable {
 	
 	private static float ANGLE = (float) (0.5 % 360);
