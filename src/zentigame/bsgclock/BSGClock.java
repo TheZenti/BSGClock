@@ -704,6 +704,10 @@ public class BSGClock implements Runnable {
 				}
 			}
 			if (countdown == 0) {
+				colorFlash.scheduleAtFixedRate(new FlashingDigitalClock(), 0, 8);
+				if (!keepRunning) {
+					counter.cancel();
+				}
 				if (playSound)
 				{
 					for(int i = 0; i < 3; i++) {
@@ -714,10 +718,6 @@ public class BSGClock implements Runnable {
 							e.printStackTrace();
 						}
 					}
-				}
-				colorFlash.scheduleAtFixedRate(new FlashingDigitalClock(), 0, 8);
-				if (!keepRunning) {
-					counter.cancel();
 				}
 			}
 		}
