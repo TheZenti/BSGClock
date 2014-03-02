@@ -11,10 +11,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.PixelFormat;
-
 import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.util.ResourceLoader;
@@ -168,7 +168,9 @@ public class BSGClock implements Runnable {
 				}
 			}
 		}
+		System.out.println("Finalizing countdown window");
 		Display.destroy();
+		AL.destroy();
 		counter.cancel();
 		parent.setStartButtonState(true);
 		parent.cleanClockThread();

@@ -2,11 +2,16 @@ package zentigame.bsgclock;
 
 import javax.swing.*;
 
+import org.lwjgl.openal.AL;
+import org.lwjgl.opengl.Display;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
 
 import zentigame.*;
 
@@ -215,6 +220,22 @@ public class MainMenu {
 			public void actionPerformed(ActionEvent e) {
 				aboutDialog.setVisible(true);
 			}
+		});
+	
+		mainMenu.addWindowStateListener(new WindowStateListener() {
+
+			@Override
+			public void windowStateChanged(WindowEvent e) {
+				// TODO Auto-generated method stub
+				if (e.getID() == WindowEvent.WINDOW_CLOSED || e.getID() == WindowEvent.WINDOW_CLOSING) {
+					try {
+						Display.destroy();
+						AL.destroy();
+					} catch (Exception e1) {}
+				}
+			}
+			
+			
 		});
 	}
 	
