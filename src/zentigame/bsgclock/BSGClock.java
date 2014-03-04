@@ -19,6 +19,7 @@ import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
+import zentigame.sound.SoundPlayer;
 import de.matthiasmann.twl.utils.PNGDecoder;
 
 
@@ -67,20 +68,13 @@ public class BSGClock implements Runnable {
 		playSound = playSoundOnExpiration;
 		playTick = playTickSoundEverySecond;
 		keepRunning = keepClockRunningAfterExpiration;
+		fullScreen = fullscreen;
 		countdown = 0L;
+		showSign = false;
+		currentColor = new float[] {1f, 0.67058823529411764705882352941176f, 0.06666666666666666666666666666667f};
 		countdownSetter = new Timer();
 		counter = new Timer();
 		colorFlash = new Timer();
-		currentColor = new float[] {1f, 0.67058823529411764705882352941176f, 0.06666666666666666666666666666667f};
-		showSign = false;
-		fullScreen = fullscreen;
-		try {
-			clockRunning = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockRunning.ogg"));
-			clockExpired = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockExpired.ogg"));
-			clockTick = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockTick.ogg"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void init() throws Exception {
@@ -110,6 +104,19 @@ public class BSGClock implements Runnable {
 		partHeight = height / 2;
 		sliceLength = partHeight / 152;
 		bitSize = width / 120;
+		
+		while(true) {
+			try {
+				clockRunning = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockRunning.ogg"));
+				clockExpired = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockExpired.ogg"));
+				clockTick = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockTick.ogg"));
+				break;
+			} catch (IOException e) {
+				e.printStackTrace();
+				AL.create();
+				AudioLoader.update();
+			}
+		}
 	}
 
 	@Override
@@ -639,7 +646,7 @@ public class BSGClock implements Runnable {
 		public void run() {
 			switch (step) {
 			case 0:
-				if (playSound) clockRunning.playAsSoundEffect(1.0f, 1.0f, false);
+				if (playSound) SoundPlayer.playEffect(clockRunning);
 				countdown = numbers[0];
 				break;
 			case 1:
@@ -700,7 +707,7 @@ public class BSGClock implements Runnable {
 			countdown++;
 			if (playTick) {
 				if ((countdown % 100) == 0) {
-					if (playSound) clockTick.playAsSoundEffect(1.0f, 1.0f, false);
+					if (playSound) SoundPlayer.playEffect(clockTick);
 				}
 			}
 			if (countdown == 0) {
@@ -710,14 +717,18 @@ public class BSGClock implements Runnable {
 				}
 				if (playSound)
 				{
-					for(int i = 0; i < 3; i++) {
-						clockExpired.playAsSoundEffect(1.0f, 1.0f, false);
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+					new Thread(){
+						public void run() {
+							for(int i = 0; i < 3; i++) {
+								SoundPlayer.playEffect(clockExpired);
+								try {
+									Thread.sleep(1000);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
 						}
-					}
+					}.start();
 				}
 			}
 		}
