@@ -104,7 +104,7 @@ public class BSGClock implements Runnable {
 		partHeight = height / 2;
 		sliceLength = partHeight / 152;
 		bitSize = width / 120;
-		
+
 		while(true) {
 			try {
 				clockRunning = AudioLoader.getAudio("OGG", ResourceLoader.getResourceAsStream("clockRunning.ogg"));
@@ -177,7 +177,6 @@ public class BSGClock implements Runnable {
 		}
 		System.out.println("Finalizing countdown window");
 		Display.destroy();
-		AL.destroy();
 		counter.cancel();
 		parent.setStartButtonState(true);
 		parent.cleanClockThread();
