@@ -120,8 +120,9 @@ public class MainMenu {
 
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (hours.getText().length() > 2)
-					hours.setText(hours.getText().substring(0, 2));
+				int length = hours.getText().length();
+				if (length > 2)
+					hours.setText(hours.getText().substring(length - 2, length));
 			}
 
 			@Override
@@ -138,8 +139,9 @@ public class MainMenu {
 
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (minutes.getText().length() > 1)
-					minutes.setText(minutes.getText().substring(0, 1));
+				int length = minutes.getText().length();
+				if (length > 1)
+					minutes.setText(minutes.getText().substring(length - 1, length));
 			}
 
 			@Override
@@ -155,8 +157,9 @@ public class MainMenu {
 		seconds.addKeyListener(new KeyListener() {
 			@Override
 			public void keyTyped(KeyEvent e) {
-				if (seconds.getText().length() > 1)
-					seconds.setText(seconds.getText().substring(0, 1));
+				int length = seconds.getText().length();
+				if (length > 1)
+					seconds.setText(seconds.getText().substring(length - 1, length));
 			}
 
 			@Override
