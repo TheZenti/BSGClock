@@ -116,61 +116,11 @@ public class MainMenu {
 	}
 
 	private void addActionListeners() {
-		hours.addKeyListener(new KeyListener() {
+		addKeyListener(hours, 2);
 
-			@Override
-			public void keyTyped(KeyEvent e) {
-				int length = hours.getText().length();
-				if (length > 2)
-					hours.setText(hours.getText().substring(length - 2, length));
-			}
+		addKeyListener(minutes, 1);
 
-			@Override
-			public void keyPressed(KeyEvent e) {
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-
-		});
-
-		minutes.addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-				int length = minutes.getText().length();
-				if (length > 1)
-					minutes.setText(minutes.getText().substring(length - 1, length));
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-
-		});
-
-		seconds.addKeyListener(new KeyListener() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-				int length = seconds.getText().length();
-				if (length > 1)
-					seconds.setText(seconds.getText().substring(length - 1, length));
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-
-		});
+		addKeyListener(seconds, 1);
 
 		//startButton
 		startButton.addActionListener(e -> {
@@ -224,6 +174,26 @@ public class MainMenu {
 					AL.destroy();
 				} catch (Exception ignored) {}
 			}
+		});
+	}
+
+	private void addKeyListener(JTextField field, int maxLength) {
+		field.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				int length = field.getText().length();
+				if (length > maxLength)
+					field.setText(field.getText().substring(length - 1, length));
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+
 		});
 	}
 
