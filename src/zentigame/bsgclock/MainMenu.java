@@ -45,10 +45,10 @@ public class MainMenu {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new MainMenu().run(args);
+		new MainMenu().run();
 	}
 
-	private void run(String args[]) {
+	private void run() {
 		//retrieveIcon();
 
 		mainMenu.pack();
@@ -61,16 +61,7 @@ public class MainMenu {
 	        UIManager.setLookAndFeel(
 	            UIManager.getSystemLookAndFeelClassName());
 	    }
-	    catch (UnsupportedLookAndFeelException e) {
-	       // handle exception
-	    }
-	    catch (ClassNotFoundException e) {
-	       // handle exception
-	    }
-	    catch (InstantiationException e) {
-	       // handle exception
-	    }
-	    catch (IllegalAccessException e) {
+	    catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 	       // handle exception
 	    }
 

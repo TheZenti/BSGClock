@@ -25,31 +25,31 @@ import de.matthiasmann.twl.utils.PNGDecoder;
 
 //TODO: Overlay clock, which minimizes on a key.
 public class BSGClock implements Runnable {
-	
+
 	private static float ANGLE = (float) (0.5 % 360);
 	private static float ANGLER = (float) (ANGLE * (Math.PI / 180));
 	private static float DEGREES90R = (float) (90 * (Math.PI / 180));
-	
+
 	private static final String GAME_TITLE = "BSGClock";
 	private static final int FRAMERATE = 60;
-	
+
 	private MainMenu parent;
 
 	private Audio clockRunning;
 	private Audio clockExpired;
 	private Audio clockTick;
-	
+
 	private int width, height;
 	private float bitSize;
 	private float partHeight, sliceLength;
-	
+
 	private long countdown;
 	private boolean playSound;
 	private boolean playTick;
 	private boolean keepRunning;
 	private boolean finished;
 	private boolean fullScreen;
-	
+
 	private boolean showSign;
 
 	private float[] currentColor;
@@ -85,12 +85,12 @@ public class BSGClock implements Runnable {
 		Display.setResizable(!fullScreen);
 		try {
 			Display.setIcon(retrieveIcon());
-		} catch (Exception e) {}
-		
+		} catch (Exception ignored) {}
+
 		// Enable vsync if we can (due to how OpenGL works, it cannot be
 		// guarenteed to always work)
 		Display.setVSyncEnabled(true);
-	
+
 		try{
 			Display.create(new PixelFormat(8,0,0,16));
 		}
@@ -132,7 +132,7 @@ public class BSGClock implements Runnable {
 			// the
 			// scenes work, and also displays the rendered output
 			Display.update();
-			
+
 			if(Display.wasResized())
 			{
 				height = Display.getHeight();
@@ -144,7 +144,7 @@ public class BSGClock implements Runnable {
 				bitSize = width / 120;
 				GL11.glViewport(0, 0, width, height);
 			}
-	
+
 			if (Display.isCloseRequested()) {
 				finished = true;
 			}
@@ -153,22 +153,22 @@ public class BSGClock implements Runnable {
 			}
 			if (Keyboard.isKeyDown(Keyboard.KEY_F12))
 				saveFrameAsPNG(Long.toString(countdown) + ".png");
-	
+
 			// The window is in the foreground, so we should play the game
 			if (Display.isActive()) {
 				render();
 				Display.sync(FRAMERATE);
 			}
-	
+
 			// The window is not in the foreground, so we can allow other stuff
 			// to run and
 			// infrequently update
 			else {
 				try {
 					Thread.sleep(100);
-				} catch (InterruptedException e) {
+				} catch (InterruptedException ignored) {
 				}
-	
+
 				// Only bother rendering if the window is visible or dirty
 				if (Display.isVisible() || Display.isDirty()) {
 					render();
@@ -199,15 +199,15 @@ public class BSGClock implements Runnable {
 		GL11.glTranslated(width / 2, partHeight * 0.8, 0.0f);
 		renderFullAnalogClock();
 		GL11.glPopMatrix();
-		
+
 		GL11.glColor3f(currentColor[0], currentColor[1], currentColor[2]);
-		
+
 		GL11.glPushMatrix();
 		GL11.glTranslated(width / 50, partHeight * 1.65, 0.0f);
 		renderColons();
 		renderDigitalCounter();
 		GL11.glPopMatrix();
-		
+
 		GL11.glPushMatrix();
 		GL11.glTranslated(width / 2, partHeight * 0.8, 0.0f);
 		renderAnalogCounter();
@@ -287,7 +287,7 @@ public class BSGClock implements Runnable {
 		GL11.glTranslatef(bitSize * 10, 0.0f, 0.0f);
 		renderNumber(time[8]);
 	}
-	
+
 	private void renderNumber(int number) {
 		GL11.glPushMatrix();
 		switch (number) {
@@ -362,13 +362,13 @@ public class BSGClock implements Runnable {
 		}
 		GL11.glPopMatrix();
 	}
-	
+
 	/**
 	 * Renders a part of the digital number.
-	 * 
+	 *
 	 * @param part
 	 *            - The part to render: <br>
-	 * 
+	 *
 	 *            <pre>
 	 *      0
 	 *      _
@@ -439,11 +439,11 @@ public class BSGClock implements Runnable {
 			GL11.glEnd();
 		}
 	}
-	
+
 
 	private void renderColons() {
 		GL11.glPushMatrix();
-		
+
 		GL11.glTranslated(this.bitSize * 44, bitSize * 1.5, 0.0f);
 		GL11.glBegin(GL11.GL_QUADS);
 		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
@@ -501,7 +501,7 @@ public class BSGClock implements Runnable {
 		for (int i = 0; i < 60; i++) {
 			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
-			//As simply rotating along the center doesn't work so well, 
+			//As simply rotating along the center doesn't work so well,
 			//working with sine and cosine in order to get appropriate co-ordinates was necessary.
 			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
@@ -517,7 +517,7 @@ public class BSGClock implements Runnable {
 			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
-		
+
 		//minutes
 		GL11.glPushMatrix();
 		for (int i = 0; i < 60; i++) {
@@ -537,7 +537,7 @@ public class BSGClock implements Runnable {
 			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
-		
+
 		//hours
 		GL11.glPushMatrix();
 		for (int i = 0; i < 12; i++) {
@@ -558,14 +558,14 @@ public class BSGClock implements Runnable {
 		}
 		GL11.glPopMatrix();
 	}
-	
+
 	private void renderAnalogCounter() {
 		//seconds
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[2]; i < j && i < 60; i++) {
 			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
 			GL11.glBegin(GL11.GL_POLYGON);
-			//As simple rotating along the center doesn't work so well, 
+			//As simple rotating along the center doesn't work so well,
 			//I had to work with sine and cosine in order to get appropriate co-ordinates.
 			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
 				double circleX = java.lang.Math.cos(t);
@@ -581,7 +581,7 @@ public class BSGClock implements Runnable {
 			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
-		
+
 		//minutes
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[1]; i < j && i < 60; i++) {
@@ -601,7 +601,7 @@ public class BSGClock implements Runnable {
 			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
 		}
 		GL11.glPopMatrix();
-		
+
 		//hours
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[0]; i < j && i < 12; i++) {
@@ -691,15 +691,15 @@ public class BSGClock implements Runnable {
 			case 10:
 				try {
 					counter.scheduleAtFixedRate(new CountDown(), 1000, 10);
-					countdownSetter.cancel();	
-				} catch (Exception e) {}
+					countdownSetter.cancel();
+				} catch (Exception ignored) {}
 				cancel();
 				break;
 			}
 			step++;
 		}
 	}
-	
+
 	class CountDown extends TimerTask {
 		@Override
 		public void run() {
@@ -732,16 +732,16 @@ public class BSGClock implements Runnable {
 			}
 		}
 	}
-	
+
 	class FlashingDigitalClock extends TimerTask {
 		private int step;
 		private int iteration;
-		
+
 		public FlashingDigitalClock() {
 			step = 0;
 			iteration = 0;
 		}
-		
+
 		@Override
 		public void run() {
 			step++;
@@ -765,11 +765,11 @@ public class BSGClock implements Runnable {
 			}
 		}
 	}
-	
+
 	private ByteBuffer[] retrieveIcon() throws IOException {
 		InputStream is = parent.getClass().getResource("/zentigame/bsgclock/BSGClock.png").openStream();
 		ByteBuffer b32 = null, b16 = null;
-		
+
         try {
             PNGDecoder decoder = new PNGDecoder(is);
             ByteBuffer bb = ByteBuffer.allocateDirect(decoder.getWidth()*decoder.getHeight()*4);
@@ -779,7 +779,7 @@ public class BSGClock implements Runnable {
         } finally {
             is.close();
         }
-        
+
         is = parent.getClass().getResource("/zentigame/bsgclock/BSGClock16.png").openStream();
         try {
             PNGDecoder decoder = new PNGDecoder(is);
@@ -790,64 +790,64 @@ public class BSGClock implements Runnable {
         } finally {
             is.close();
         }
-        
+
         return new ByteBuffer[] {b16, b32};
 	}
-	
+
 	private void saveFrameAsPNG(String fileName ) {
-        
+
         // Open File
         if( fileName == null ) {
-            
-            fileName = new String( "Screenshot.png" ); 
+
+            fileName = new String( "Screenshot.png" );
         }
-        
-        File outputFile = new File( fileName );             
-        
+
+        File outputFile = new File( fileName );
+
         try {
             javax.imageio.ImageIO.write( takeScreenshot(), "PNG", outputFile );
-        
+
         } catch (Exception e) {
             System.out.println( "Error: ImageIO.write." );
             e.printStackTrace();
         }
     }
-    
-    
+
+
     private BufferedImage takeScreenshot(){
-        
+
         int frameWidth = Display.getDisplayMode().getWidth();
         int frameHeight = Display.getDisplayMode().getHeight();
-        
+
         BufferedImage screenshot = null;
          // allocate space for RBG pixels
-        ByteBuffer fb = ByteBuffer.allocateDirect(frameWidth*frameHeight*3);    
-            
+        ByteBuffer fb = ByteBuffer.allocateDirect(frameWidth*frameHeight*3);
+
          int[] pixels = new int[frameWidth * frameHeight];
          int bindex;
-        
+
          // grab a copy of the current frame contents as RGB
          GL11.glReadPixels(0, 0, frameWidth, frameHeight, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, fb);
-         
-                 
+
+
          // convert RGB data in ByteBuffer to integer array
          for (int i=0; i < pixels.length; i++) {
              bindex = i * 3;
              pixels[i] = ((fb.get(bindex) << 16))  + ((fb.get(bindex+1) << 8))  + ((fb.get(bindex+2) << 0));
          }
-        
+
          // Create a BufferedImage with the RGB pixels then save as PNG
          try {
              screenshot = new BufferedImage(frameWidth, frameHeight, BufferedImage.TYPE_INT_RGB);
-             screenshot.setRGB(0, 0, frameWidth, frameHeight, pixels, 0, frameWidth);     
-             
-             
+             screenshot.setRGB(0, 0, frameWidth, frameHeight, pixels, 0, frameWidth);
+
+
              // * Flip Image Y Axis *
-             AffineTransform tx = AffineTransform.getScaleInstance(1, -1); 
-             tx.translate(0, -screenshot.getHeight(null)); 
-             AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR); 
-             screenshot = op.filter(screenshot, null); 
-             
+             AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+             tx.translate(0, -screenshot.getHeight(null));
+             AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+             screenshot = op.filter(screenshot, null);
+
          }
          catch (Exception e) {
              System.out.println("ScreenShot() exception: " +e);
