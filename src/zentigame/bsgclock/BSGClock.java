@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,14 +27,14 @@ import de.matthiasmann.twl.utils.PNGDecoder;
 //TODO: Overlay clock, which minimizes on a key.
 public class BSGClock implements Runnable {
 
-	private static float ANGLE = (float) (0.5 % 360);
-	private static float ANGLER = (float) (ANGLE * (Math.PI / 180));
-	private static float DEGREES90R = (float) (90 * (Math.PI / 180));
+	private static final float ANGLE = (float) (0.5 % 360);
+	private static final float ANGLER = (float) (ANGLE * (Math.PI / 180));
+	private static final float DEGREES90R = (float) (90 * (Math.PI / 180));
 
 	private static final String GAME_TITLE = "BSGClock";
 	private static final int FRAMERATE = 60;
 
-	private MainMenu parent;
+	private final MainMenu parent;
 
 	private Audio clockRunning;
 	private Audio clockExpired;
@@ -44,19 +45,23 @@ public class BSGClock implements Runnable {
 	private float partHeight, sliceLength;
 
 	private long countdown;
-	private boolean playSound;
-	private boolean playTick;
-	private boolean keepRunning;
+	private final boolean playSound;
+	private final boolean playTick;
+	private final boolean keepRunning;
 	private boolean finished;
-	private boolean fullScreen;
+	private final boolean fullScreen;
 
 	private boolean showSign;
 
-	private float[] currentColor;
+	private final float[] currentColor;
 
-	private String initialHours, initialMinutes, initialSeconds;
+	private final String initialHours;
+	private final String initialMinutes;
+	private final String initialSeconds;
 
-	private Timer countdownSetter, counter, colorFlash;
+	private final Timer countdownSetter;
+	private final Timer counter;
+	private final Timer colorFlash;
 
 	public BSGClock(MainMenu parentWindow, String hours, String minutes, String seconds,
 			boolean playSoundOnExpiration, boolean playTickSoundEverySecond,
@@ -101,9 +106,9 @@ public class BSGClock implements Runnable {
 		System.out.println("Initializing countdown window, " + Display.getWidth() + "x" + Display.getHeight() + ", " + ((Display.isFullscreen()) ? "fullscreen mode" : "window mode"));
 		height = Display.getDisplayMode().getHeight();
 		width = Display.getDisplayMode().getWidth();
-		partHeight = height / 2;
+		partHeight = height >> 1;
 		sliceLength = partHeight / 152;
-		bitSize = width / 120;
+		bitSize = width / 120f;
 
 		while(true) {
 			try {
@@ -139,9 +144,9 @@ public class BSGClock implements Runnable {
 				width = Display.getWidth();
 				// Debug call for Display resolution
 				// System.out.println("Resolution: " + height + "x" + width);
-				partHeight = height / 2;
+				partHeight = height >> 1;
 				sliceLength = partHeight / 152;
-				bitSize = width / 120;
+				bitSize = width / 120f;
 				GL11.glViewport(0, 0, width, height);
 			}
 
@@ -152,7 +157,7 @@ public class BSGClock implements Runnable {
 				finished = true;
 			}
 			if (Keyboard.isKeyDown(Keyboard.KEY_F12))
-				saveFrameAsPNG(Long.toString(countdown) + ".png");
+				saveFrameAsPNG(countdown + ".png");
 
 			// The window is in the foreground, so we should play the game
 			if (Display.isActive()) {
@@ -165,6 +170,7 @@ public class BSGClock implements Runnable {
 			// infrequently update
 			else {
 				try {
+					//noinspection BusyWait
 					Thread.sleep(100);
 				} catch (InterruptedException ignored) {
 				}
@@ -196,31 +202,30 @@ public class BSGClock implements Runnable {
 		GL11.glColor3f(0.2078431372549019607843137254902f, 0.10196078431372549019607843137255f, 0.06274509803921568627450980392157f);
 
 		GL11.glPushMatrix();
-		GL11.glTranslated(width / 2, partHeight * 0.8, 0.0f);
+		GL11.glTranslated(width >> 1, partHeight * 0.8, 0.0f);
 		renderFullAnalogClock();
 		GL11.glPopMatrix();
 
 		GL11.glColor3f(currentColor[0], currentColor[1], currentColor[2]);
 
 		GL11.glPushMatrix();
-		GL11.glTranslated(width / 50, partHeight * 1.65, 0.0f);
+		GL11.glTranslated(width / 50d, partHeight * 1.65, 0.0f);
 		renderColons();
 		renderDigitalCounter();
 		GL11.glPopMatrix();
 
 		GL11.glPushMatrix();
-		GL11.glTranslated(width / 2, partHeight * 0.8, 0.0f);
+		GL11.glTranslated(width >> 1, partHeight * 0.8, 0.0f);
 		renderAnalogCounter();
 		GL11.glPopMatrix();
 	}
 
 	public int[] getFormattedCountdown() {
 		long countdown = Math.abs(this.countdown);
-		int[] time = { (int) (countdown / 360000),
+		return new int[]{ (int) (countdown / 360000),
 				(int) ((countdown % 360000) / 6000),
 				(int) ((countdown % 6000) / 100),
 				(int) (countdown % 100) };
-		return time;
 	}
 
 	public int[] getOneDigitCountdown() {
@@ -236,7 +241,7 @@ public class BSGClock implements Runnable {
 		if (intermediateTime[0].length() < 3) {
 			intermediateTime[0] = "0" + intermediateTime[0];
 		}
-		int[] time = { Integer.parseInt(intermediateTime[0].substring(0, 1)),
+		return new int[]{ Integer.parseInt(intermediateTime[0].substring(0, 1)),
 				Integer.parseInt(intermediateTime[0].substring(1, 2)),
 				Integer.parseInt(intermediateTime[0].substring(2, 3)),
 				Integer.parseInt(intermediateTime[1].substring(0, 1)),
@@ -245,7 +250,6 @@ public class BSGClock implements Runnable {
 				Integer.parseInt(intermediateTime[2].substring(1, 2)),
 				Integer.parseInt(intermediateTime[3].substring(0, 1)),
 				Integer.parseInt(intermediateTime[3].substring(1, 2)) };
-		return time;
 	}
 
 	private void renderDigitalCounter() {
@@ -291,74 +295,75 @@ public class BSGClock implements Runnable {
 	private void renderNumber(int number) {
 		GL11.glPushMatrix();
 		switch (number) {
-		case 0:
-			renderNumberPart(0);
-			renderNumberPart(1);
-			renderNumberPart(2);
-			renderNumberPart(4);
-			renderNumberPart(5);
-			renderNumberPart(6);
-			break;
-		case 1:
-			renderNumberPart(2);
-			renderNumberPart(5);
-			break;
-		case 2:
-			renderNumberPart(0);
-			renderNumberPart(2);
-			renderNumberPart(3);
-			renderNumberPart(4);
-			renderNumberPart(6);
-			break;
-		case 3:
-			renderNumberPart(0);
-			renderNumberPart(2);
-			renderNumberPart(3);
-			renderNumberPart(5);
-			renderNumberPart(6);
-			break;
-		case 4:
-			renderNumberPart(1);
-			renderNumberPart(2);
-			renderNumberPart(3);
-			renderNumberPart(5);
-			break;
-		case 5:
-			renderNumberPart(0);
-			renderNumberPart(1);
-			renderNumberPart(3);
-			renderNumberPart(5);
-			renderNumberPart(6);
-			break;
-		case 6:
-			renderNumberPart(0);
-			renderNumberPart(1);
-			renderNumberPart(3);
-			renderNumberPart(4);
-			renderNumberPart(5);
-			renderNumberPart(6);
-			break;
-		case 7:
-			renderNumberPart(0);
-			renderNumberPart(2);
-			renderNumberPart(5);
-			break;
-		case 8:
-			renderNumberPart(0);
-			renderNumberPart(1);
-			renderNumberPart(2);
-			renderNumberPart(3);
-			renderNumberPart(4);
-			renderNumberPart(5);
-			renderNumberPart(6);
-			break;
-		case 9:
-			renderNumberPart(0);
-			renderNumberPart(1);
-			renderNumberPart(2);
-			renderNumberPart(3);
-			renderNumberPart(5);
-			renderNumberPart(6);
+			case 0 -> {
+				renderNumberPart(0);
+				renderNumberPart(1);
+				renderNumberPart(2);
+				renderNumberPart(4);
+				renderNumberPart(5);
+				renderNumberPart(6);
+			}
+			case 1 -> {
+				renderNumberPart(2);
+				renderNumberPart(5);
+			}
+			case 2 -> {
+				renderNumberPart(0);
+				renderNumberPart(2);
+				renderNumberPart(3);
+				renderNumberPart(4);
+				renderNumberPart(6);
+			}
+			case 3 -> {
+				renderNumberPart(0);
+				renderNumberPart(2);
+				renderNumberPart(3);
+				renderNumberPart(5);
+				renderNumberPart(6);
+			}
+			case 4 -> {
+				renderNumberPart(1);
+				renderNumberPart(2);
+				renderNumberPart(3);
+				renderNumberPart(5);
+			}
+			case 5 -> {
+				renderNumberPart(0);
+				renderNumberPart(1);
+				renderNumberPart(3);
+				renderNumberPart(5);
+				renderNumberPart(6);
+			}
+			case 6 -> {
+				renderNumberPart(0);
+				renderNumberPart(1);
+				renderNumberPart(3);
+				renderNumberPart(4);
+				renderNumberPart(5);
+				renderNumberPart(6);
+			}
+			case 7 -> {
+				renderNumberPart(0);
+				renderNumberPart(2);
+				renderNumberPart(5);
+			}
+			case 8 -> {
+				renderNumberPart(0);
+				renderNumberPart(1);
+				renderNumberPart(2);
+				renderNumberPart(3);
+				renderNumberPart(4);
+				renderNumberPart(5);
+				renderNumberPart(6);
+			}
+			case 9 -> {
+				renderNumberPart(0);
+				renderNumberPart(1);
+				renderNumberPart(2);
+				renderNumberPart(3);
+				renderNumberPart(5);
+				renderNumberPart(6);
+			}
 		}
 		GL11.glPopMatrix();
 	}
@@ -380,63 +385,64 @@ public class BSGClock implements Runnable {
 	 */
 	private void renderNumberPart(int part) {
 		switch (part) {
-		case 0:
-			GL11.glBegin(GL11.GL_QUADS);
-			GL11.glVertex2f(bitSize + bitSize / 10, bitSize * 6);
-			GL11.glVertex2f(bitSize / 10, bitSize * 7);
-			GL11.glVertex2f(bitSize * 8 - bitSize / 10, bitSize * 7);
-			GL11.glVertex2f(bitSize * 7 - bitSize / 10, bitSize * 6);
-			GL11.glEnd();
-			break;
-		case 1:
-			GL11.glBegin(GL11.GL_QUADS);
-			GL11.glVertex2f(0, bitSize * 7 - bitSize / 10);
-			GL11.glVertex2d(0, bitSize / 2 - bitSize / 3.3);
-			GL11.glVertex2d(bitSize, bitSize - bitSize / 3.3);
-			GL11.glVertex2f(bitSize, bitSize * 6 - bitSize / 10);
-			GL11.glEnd();
-			break;
-		case 2:
-			GL11.glBegin(GL11.GL_QUADS);
-			GL11.glVertex2f(bitSize * 7, bitSize * 6 - bitSize / 10);
-			GL11.glVertex2d(bitSize * 7, bitSize - bitSize / 3.3);
-			GL11.glVertex2d(bitSize * 8, bitSize / 2 - bitSize / 3.3);
-			GL11.glVertex2f(bitSize * 8, bitSize * 7 - bitSize / 10);
-			GL11.glEnd();
-			break;
-		case 3:
-			GL11.glBegin(GL11.GL_POLYGON);
-			GL11.glVertex2f(bitSize,  -bitSize / 2);
-			GL11.glVertex2f(0, 0);
-			GL11.glVertex2f(bitSize,  bitSize / 2);
-			GL11.glVertex2f(bitSize * 7,  bitSize / 2);
-			GL11.glVertex2f(bitSize * 8, 0);
-			GL11.glVertex2f(bitSize * 7,  -bitSize / 2);
-			GL11.glEnd();
-			break;
-		case 4:
-			GL11.glBegin(GL11.GL_QUADS);
-			GL11.glVertex2f(0, -(bitSize * 7 - bitSize / 10));
-			GL11.glVertex2d(0, -(bitSize / 2 - bitSize / 3.3));
-			GL11.glVertex2d(bitSize, -(bitSize - bitSize / 3.3));
-			GL11.glVertex2f(bitSize, -(bitSize * 6 - bitSize / 10));
-			GL11.glEnd();
-			break;
-		case 5:
-			GL11.glBegin(GL11.GL_QUADS);
-			GL11.glVertex2f(bitSize * 7, -(bitSize * 6 - bitSize / 10));
-			GL11.glVertex2d(bitSize * 7, -(bitSize - bitSize / 3.3));
-			GL11.glVertex2d(bitSize * 8, -(bitSize / 2 - bitSize / 3.3));
-			GL11.glVertex2f(bitSize * 8, -(bitSize * 7 - bitSize / 10));
-			GL11.glEnd();
-			break;
-		case 6:
-			GL11.glBegin(GL11.GL_QUADS);
-			GL11.glVertex2f(bitSize + bitSize / 10, -(bitSize * 6));
-			GL11.glVertex2f(bitSize / 10, -(bitSize * 7));
-			GL11.glVertex2f(bitSize * 8 - bitSize / 10, -(bitSize * 7));
-			GL11.glVertex2f(bitSize * 7 - bitSize / 10, -(bitSize * 6));
-			GL11.glEnd();
+			case 0 -> {
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glVertex2f(bitSize + bitSize / 10, bitSize * 6);
+				GL11.glVertex2f(bitSize / 10, bitSize * 7);
+				GL11.glVertex2f(bitSize * 8 - bitSize / 10, bitSize * 7);
+				GL11.glVertex2f(bitSize * 7 - bitSize / 10, bitSize * 6);
+				GL11.glEnd();
+			}
+			case 1 -> {
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glVertex2f(0, bitSize * 7 - bitSize / 10);
+				GL11.glVertex2d(0, bitSize / 2 - bitSize / 3.3);
+				GL11.glVertex2d(bitSize, bitSize - bitSize / 3.3);
+				GL11.glVertex2f(bitSize, bitSize * 6 - bitSize / 10);
+				GL11.glEnd();
+			}
+			case 2 -> {
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glVertex2f(bitSize * 7, bitSize * 6 - bitSize / 10);
+				GL11.glVertex2d(bitSize * 7, bitSize - bitSize / 3.3);
+				GL11.glVertex2d(bitSize * 8, bitSize / 2 - bitSize / 3.3);
+				GL11.glVertex2f(bitSize * 8, bitSize * 7 - bitSize / 10);
+				GL11.glEnd();
+			}
+			case 3 -> {
+				GL11.glBegin(GL11.GL_POLYGON);
+				GL11.glVertex2f(bitSize, -bitSize / 2);
+				GL11.glVertex2f(0, 0);
+				GL11.glVertex2f(bitSize, bitSize / 2);
+				GL11.glVertex2f(bitSize * 7, bitSize / 2);
+				GL11.glVertex2f(bitSize * 8, 0);
+				GL11.glVertex2f(bitSize * 7, -bitSize / 2);
+				GL11.glEnd();
+			}
+			case 4 -> {
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glVertex2f(0, -(bitSize * 7 - bitSize / 10));
+				GL11.glVertex2d(0, -(bitSize / 2 - bitSize / 3.3));
+				GL11.glVertex2d(bitSize, -(bitSize - bitSize / 3.3));
+				GL11.glVertex2f(bitSize, -(bitSize * 6 - bitSize / 10));
+				GL11.glEnd();
+			}
+			case 5 -> {
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glVertex2f(bitSize * 7, -(bitSize * 6 - bitSize / 10));
+				GL11.glVertex2d(bitSize * 7, -(bitSize - bitSize / 3.3));
+				GL11.glVertex2d(bitSize * 8, -(bitSize / 2 - bitSize / 3.3));
+				GL11.glVertex2f(bitSize * 8, -(bitSize * 7 - bitSize / 10));
+				GL11.glEnd();
+			}
+			case 6 -> {
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glVertex2f(bitSize + bitSize / 10, -(bitSize * 6));
+				GL11.glVertex2f(bitSize / 10, -(bitSize * 7));
+				GL11.glVertex2f(bitSize * 8 - bitSize / 10, -(bitSize * 7));
+				GL11.glVertex2f(bitSize * 7 - bitSize / 10, -(bitSize * 6));
+				GL11.glEnd();
+			}
 		}
 	}
 
@@ -444,117 +450,50 @@ public class BSGClock implements Runnable {
 	private void renderColons() {
 		GL11.glPushMatrix();
 
-		GL11.glTranslated(this.bitSize * 44, bitSize * 1.5, 0.0f);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, bitSize / 2);
-		GL11.glVertex2f(-bitSize / 2, bitSize / 2);
-		GL11.glEnd();
+		drawColon(this.bitSize * 44, this.bitSize * 1.5);
 
-		GL11.glTranslated(0.0f, -(bitSize * 4.5), 0.0f);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, bitSize / 2);
-		GL11.glVertex2f(-bitSize / 2, bitSize / 2);
-		GL11.glEnd();
+		drawColon(0.0f, -(this.bitSize * 4.5));
 
-		GL11.glTranslated(this.bitSize * 24, bitSize * 4.5, 0.0f);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, bitSize / 2);
-		GL11.glVertex2f(-bitSize / 2, bitSize / 2);
-		GL11.glEnd();
+		drawColon(this.bitSize * 24, this.bitSize * 4.5);
 
-		GL11.glTranslated(0.0f, -(bitSize * 4.5), 0.0f);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, bitSize / 2);
-		GL11.glVertex2f(-bitSize / 2, bitSize / 2);
-		GL11.glEnd();
+		drawColon(0.0f, -(this.bitSize * 4.5));
 
-		GL11.glTranslated(this.bitSize * 24, bitSize * 4.5, 0.0f);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, bitSize / 2);
-		GL11.glVertex2f(-bitSize / 2, bitSize / 2);
-		GL11.glEnd();
+		drawColon(this.bitSize * 24, this.bitSize * 4.5);
 
-		GL11.glTranslated(0.0f, -(bitSize * 4.5), 0.0f);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, -bitSize / 2);
-		GL11.glVertex2f(bitSize / 2, bitSize / 2);
-		GL11.glVertex2f(-bitSize / 2, bitSize / 2);
-		GL11.glEnd();
+		drawColon(0.0f, -(this.bitSize * 4.5));
 
 		GL11.glPopMatrix();
+	}
+
+	private void drawColon(double offsetX, double offsetY) {
+		GL11.glTranslated(offsetX, offsetY, 0.0);
+		GL11.glBegin(GL11.GL_QUADS);
+		GL11.glVertex2f(-bitSize / 2, -bitSize / 2);
+		GL11.glVertex2f(bitSize / 2, -bitSize / 2);
+		GL11.glVertex2f(bitSize / 2, bitSize / 2);
+		GL11.glVertex2f(-bitSize / 2, bitSize / 2);
+		GL11.glEnd();
 	}
 
 	private void renderFullAnalogClock() {
 		//seconds
 		GL11.glPushMatrix();
 		for (int i = 0; i < 60; i++) {
-			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
-			GL11.glBegin(GL11.GL_POLYGON);
-			//As simply rotating along the center doesn't work so well,
-			//working with sine and cosine in order to get appropriate co-ordinates was necessary.
-			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 62, circleY * sliceLength * 62);
-			}
-			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 52, circleY * sliceLength * 52);
-			}
-			GL11.glEnd();
-			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
+			drawSecondSlice();
 		}
 		GL11.glPopMatrix();
 
 		//minutes
 		GL11.glPushMatrix();
 		for (int i = 0; i < 60; i++) {
-			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
-			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 49, circleY * sliceLength * 49);
-			}
-			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 29, circleY * sliceLength * 29);
-			}
-			GL11.glEnd();
-			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
+			drawMinuteSlice();
 		}
 		GL11.glPopMatrix();
 
 		//hours
 		GL11.glPushMatrix();
 		for (int i = 0; i < 12; i++) {
-			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
-			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = DEGREES90R; t < DEGREES90R + 58 * ANGLER ; t += 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 26, circleY * sliceLength * 26);
-			}
-			for (double t = DEGREES90R + 58 * ANGLER; t > DEGREES90R; t -= 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 6, circleY * sliceLength * 6);
-			}
-			GL11.glEnd();
-			GL11.glRotatef(59 * ANGLE, 0, 0, 1.0f);
+			drawHourSlice();
 		}
 		GL11.glPopMatrix();
 	}
@@ -563,69 +502,59 @@ public class BSGClock implements Runnable {
 		//seconds
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[2]; i < j && i < 60; i++) {
-			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
-			GL11.glBegin(GL11.GL_POLYGON);
-			//As simple rotating along the center doesn't work so well,
-			//I had to work with sine and cosine in order to get appropriate co-ordinates.
-			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 62, circleY * sliceLength * 62);
-			}
-			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 52, circleY * sliceLength * 52);
-			}
-			GL11.glEnd();
-			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
+			drawSecondSlice();
 		}
 		GL11.glPopMatrix();
 
 		//minutes
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[1]; i < j && i < 60; i++) {
-			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
-			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = DEGREES90R; t < DEGREES90R + 10 * ANGLER ; t += 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 49, circleY * sliceLength * 49);
-			}
-			for (double t = DEGREES90R + 10 * ANGLER; t > DEGREES90R; t -= 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 29, circleY * sliceLength * 29);
-			}
-			GL11.glEnd();
-			GL11.glRotatef(11 * ANGLE, 0, 0, 1.0f);
+			drawMinuteSlice();
 		}
 		GL11.glPopMatrix();
 
 		//hours
 		GL11.glPushMatrix();
 		for (int i = 0, j = getFormattedCountdown()[0]; i < j && i < 12; i++) {
-			GL11.glRotatef(ANGLE, 0, 0, 1.0f);
-			GL11.glBegin(GL11.GL_POLYGON);
-			for (double t = DEGREES90R; t < DEGREES90R + 58 * ANGLER ; t += 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 26, circleY * sliceLength * 26);
-			}
-			for (double t = DEGREES90R + 58 * ANGLER; t > DEGREES90R; t -= 0.001D) {
-				double circleX = java.lang.Math.cos(t);
-				double circleY = java.lang.Math.sin(t);
-				GL11.glVertex2d(circleX * sliceLength * 6, circleY * sliceLength * 6);
-			}
-			GL11.glEnd();
-			GL11.glRotatef(59 * ANGLE, 0, 0, 1.0f);
+			drawHourSlice();
 		}
 		GL11.glPopMatrix();
 	}
 
+	private void drawSecondSlice() {
+		drawAnalogSlice(10, 52, 62);
+	}
+
+	private void drawMinuteSlice() {
+		drawAnalogSlice(10, 29, 49);
+	}
+
+	private void drawHourSlice() {
+		drawAnalogSlice(58, 10, 26);
+	}
+
+	private void drawAnalogSlice(int angleLength, int startCoeff, int endCoeff) {
+		GL11.glRotatef(ANGLE, 0, 0, 1.0f);
+		GL11.glBegin(GL11.GL_POLYGON);
+		//As simply rotating along the center doesn't work so well,
+		//working with sine and cosine in order to get appropriate co-ordinates was necessary.
+		for (double t = DEGREES90R; t < DEGREES90R + angleLength * ANGLER ; t += 0.001D) {
+			double circleX = java.lang.Math.cos(t);
+			double circleY = java.lang.Math.sin(t);
+			GL11.glVertex2d(circleX * sliceLength * endCoeff, circleY * sliceLength * endCoeff);
+		}
+		for (double t = DEGREES90R + angleLength * ANGLER; t > DEGREES90R; t -= 0.001D) {
+			double circleX = java.lang.Math.cos(t);
+			double circleY = java.lang.Math.sin(t);
+			GL11.glVertex2d(circleX * sliceLength * startCoeff, circleY * sliceLength * startCoeff);
+		}
+		GL11.glEnd();
+		GL11.glRotatef((angleLength + 1) * ANGLE, 0, 0, 1.0f);
+	}
+
 	class SetStartingCountdown extends TimerTask {
 		private int step;
-		private int[] numbers;
+		private final int[] numbers;
 
 		public SetStartingCountdown() {
 			numbers = new int[9];
@@ -644,57 +573,42 @@ public class BSGClock implements Runnable {
 		@Override
 		public void run() {
 			switch (step) {
-			case 0:
-				if (playSound) SoundPlayer.playEffect(clockRunning);
-				countdown = numbers[0];
-				break;
-			case 1:
-				countdown = (numbers[0] * 10) + numbers[1];
-				break;
-			case 2:
-				countdown = (numbers[0] * 100) + (numbers[1] * 10) + numbers[2];
-				break;
-			case 3:
-				countdown = (numbers[0] * 1000) + (numbers[1] * 100)
-						+ (numbers[2] * 10) + numbers[3];
-				break;
-			case 4:
-				countdown = (numbers[0] * 6000) + (numbers[1] * 1000)
-						+ (numbers[2] * 100) + (numbers[3] * 10) + numbers[4];
-				break;
-			case 5:
-				countdown = (numbers[0] * 60000) + (numbers[1] * 6000)
-						+ (numbers[2] * 1000) + (numbers[3] * 100)
-						+ (numbers[4] * 10) + numbers[5];
-				break;
-			case 6:
-				countdown = (numbers[0] * 360000) + (numbers[1] * 60000)
-						+ (numbers[2] * 6000) + (numbers[3] * 1000)
-						+ (numbers[4] * 100) + (numbers[5] * 10) + numbers[6];
-				break;
-			case 7:
-				countdown = (numbers[0] * 3600000) + (numbers[1] * 360000)
-						+ (numbers[2] * 60000) + (numbers[3] * 6000)
-						+ (numbers[4] * 1000) + (numbers[5] * 100)
-						+ (numbers[6] * 10) + numbers[7];
-				break;
-			case 8:
-				countdown = (numbers[0] * 36000000) + (numbers[1] * 3600000)
-						+ (numbers[2] * 360000) + (numbers[3] * 60000)
-						+ (numbers[4] * 6000) + (numbers[5] * 1000)
-						+ (numbers[6] * 100) + (numbers[7] * 10) + numbers[8];
-				break;
-			case 9:
-				countdown = -countdown;
-				showSign = true;
-				break;
-			case 10:
-				try {
-					counter.scheduleAtFixedRate(new CountDown(), 1000, 10);
-					countdownSetter.cancel();
-				} catch (Exception ignored) {}
-				cancel();
-				break;
+				case 0 -> {
+					if (playSound) SoundPlayer.playEffect(clockRunning);
+					countdown = numbers[0];
+				}
+				case 1 -> countdown = (numbers[0] * 10L) + numbers[1];
+				case 2 -> countdown = (numbers[0] * 100L) + (numbers[1] * 10L) + numbers[2];
+				case 3 -> countdown = (numbers[0] * 1000L) + (numbers[1] * 100L)
+						+ (numbers[2] * 10L) + numbers[3];
+				case 4 -> countdown = (numbers[0] * 6000L) + (numbers[1] * 1000L)
+						+ (numbers[2] * 100L) + (numbers[3] * 10L) + numbers[4];
+				case 5 -> countdown = (numbers[0] * 60000L) + (numbers[1] * 6000L)
+						+ (numbers[2] * 1000L) + (numbers[3] * 100L)
+						+ (numbers[4] * 10L) + numbers[5];
+				case 6 -> countdown = (numbers[0] * 360000L) + (numbers[1] * 60000L)
+						+ (numbers[2] * 6000L) + (numbers[3] * 1000L)
+						+ (numbers[4] * 100L) + (numbers[5] * 10L) + numbers[6];
+				case 7 -> countdown = (numbers[0] * 3600000L) + (numbers[1] * 360000L)
+						+ (numbers[2] * 60000L) + (numbers[3] * 6000L)
+						+ (numbers[4] * 1000L) + (numbers[5] * 100L)
+						+ (numbers[6] * 10L) + numbers[7];
+				case 8 -> countdown = (numbers[0] * 36000000L) + (numbers[1] * 3600000L)
+						+ (numbers[2] * 360000L) + (numbers[3] * 60000L)
+						+ (numbers[4] * 6000L) + (numbers[5] * 1000L)
+						+ (numbers[6] * 100L) + (numbers[7] * 10L) + numbers[8];
+				case 9 -> {
+					countdown = -countdown;
+					showSign = true;
+				}
+				case 10 -> {
+					try {
+						counter.scheduleAtFixedRate(new CountDown(), 1000, 10);
+						countdownSetter.cancel();
+					} catch (Exception ignored) {
+					}
+					cancel();
+				}
 			}
 			step++;
 		}
@@ -716,18 +630,16 @@ public class BSGClock implements Runnable {
 				}
 				if (playSound)
 				{
-					new Thread(){
-						public void run() {
-							for(int i = 0; i < 3; i++) {
-								SoundPlayer.playEffect(clockExpired);
-								try {
-									Thread.sleep(1000);
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
+					new Thread(() -> {
+						for(int i = 0; i < 3; i++) {
+							SoundPlayer.playEffect(clockExpired);
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
 							}
 						}
-					}.start();
+					}).start();
 				}
 			}
 		}
@@ -767,31 +679,27 @@ public class BSGClock implements Runnable {
 	}
 
 	private ByteBuffer[] retrieveIcon() throws IOException {
-		InputStream is = parent.getClass().getResource("/zentigame/bsgclock/BSGClock.png").openStream();
-		ByteBuffer b32 = null, b16 = null;
+		InputStream is = Objects.requireNonNull(parent.getClass().getResource("/zentigame/bsgclock/BSGClock.png")).openStream();
+		ByteBuffer b32, b16;
 
-        try {
-            PNGDecoder decoder = new PNGDecoder(is);
-            ByteBuffer bb = ByteBuffer.allocateDirect(decoder.getWidth()*decoder.getHeight()*4);
-            decoder.decode(bb, decoder.getWidth()*4, PNGDecoder.Format.RGBA);
-            bb.flip();
-            b32 = bb;
-        } finally {
-            is.close();
-        }
+		b32 = decodeIcon(is);
 
-        is = parent.getClass().getResource("/zentigame/bsgclock/BSGClock16.png").openStream();
-        try {
-            PNGDecoder decoder = new PNGDecoder(is);
-            ByteBuffer bb = ByteBuffer.allocateDirect(decoder.getWidth()*decoder.getHeight()*4);
-            decoder.decode(bb, decoder.getWidth()*4, PNGDecoder.Format.RGBA);
-            bb.flip();
-            b16 = bb;
-        } finally {
-            is.close();
-        }
+		is = Objects.requireNonNull(parent.getClass().getResource("/zentigame/bsgclock/BSGClock16.png")).openStream();
+		b16 = decodeIcon(is);
 
-        return new ByteBuffer[] {b16, b32};
+		return new ByteBuffer[] {b16, b32};
+	}
+
+	private ByteBuffer decodeIcon(InputStream is) throws IOException {
+		ByteBuffer buf;
+		try (is) {
+			PNGDecoder decoder = new PNGDecoder(is);
+			ByteBuffer bb = ByteBuffer.allocateDirect(decoder.getWidth() * decoder.getHeight() * 4);
+			decoder.decode(bb, decoder.getWidth() * 4, PNGDecoder.Format.RGBA);
+			bb.flip();
+			buf = bb;
+		}
+		return buf;
 	}
 
 	private void saveFrameAsPNG(String fileName ) {
@@ -799,7 +707,7 @@ public class BSGClock implements Runnable {
         // Open File
         if( fileName == null ) {
 
-            fileName = new String( "Screenshot.png" );
+            fileName = "Screenshot.png";
         }
 
         File outputFile = new File( fileName );
@@ -833,7 +741,7 @@ public class BSGClock implements Runnable {
          // convert RGB data in ByteBuffer to integer array
          for (int i=0; i < pixels.length; i++) {
              bindex = i * 3;
-             pixels[i] = ((fb.get(bindex) << 16))  + ((fb.get(bindex+1) << 8))  + ((fb.get(bindex+2) << 0));
+             pixels[i] = ((fb.get(bindex) << 16))  + ((fb.get(bindex+1) << 8))  + ((fb.get(bindex + 2)));
          }
 
          // Create a BufferedImage with the RGB pixels then save as PNG
