@@ -1,19 +1,15 @@
 package zentigame.bsgclock;
 
-import javax.swing.*;
-
 import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
+import zentigame.AboutDialog;
+import zentigame.SF;
 
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
-
-import zentigame.*;
 
 public class MainMenu {
 	private static final String version = "1.4.0";
@@ -24,7 +20,6 @@ public class MainMenu {
 	private Image icon;
 
 	private JFrame mainMenu;
-	private Container cPane;
 
 	private JTextField hours, minutes, seconds;
 	private JLabel colon1, colon2;
@@ -37,7 +32,7 @@ public class MainMenu {
 
 	private JButton startButton, aboutButton;
 
-	private AboutDialog aboutDialog;
+	private final AboutDialog aboutDialog;
 
 	private Thread clockThread;
 
@@ -194,43 +189,39 @@ public class MainMenu {
 	}
 
 	private void setLayout() {
-		cPane = mainMenu.getContentPane();
+		Container cPane = mainMenu.getContentPane();
 		cPane.setLayout(new GridBagLayout());
 
 		//Add the window components to the content pane
 
 		//Countdown time fields
-		SF.addGBCToCP(cPane, hours, 0,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
-		SF.addGBCToCP(cPane, colon1, 1,0);
-		SF.addGBCToCP(cPane, minutes, 2,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
-		SF.addGBCToCP(cPane, colon2, 3,0);
-		SF.addGBCToCP(cPane, seconds, 4,0,1,GridBagConstraints.CENTER,GridBagConstraints.NONE);
+		SF.addGBCToCP(cPane, hours, 0, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE);
+		SF.addGBCToCP(cPane, colon1, 1, 0);
+		SF.addGBCToCP(cPane, minutes, 2, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE);
+		SF.addGBCToCP(cPane, colon2, 3, 0);
+		SF.addGBCToCP(cPane, seconds, 4, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
 		//Field descriptors
-		SF.addGBCToCP(cPane, hLabel, 0,1);
-		SF.addGBCToCP(cPane, mLabel, 2,1);
-		SF.addGBCToCP(cPane, sLabel, 4,1);
+		SF.addGBCToCP(cPane, hLabel, 0, 1);
+		SF.addGBCToCP(cPane, mLabel, 2, 1);
+		SF.addGBCToCP(cPane, sLabel, 4, 1);
 
 		//Checkboxes
-		SF.addGBCToCP(cPane, playSound, 0,2,6);
-		SF.addGBCToCP(cPane, playTick, 0,3,6);
-		SF.addGBCToCP(cPane, keepRunning, 0,4,6);
-		SF.addGBCToCP(cPane, fullscreen, 0,5,6);
+		SF.addGBCToCP(cPane, playSound, 0, 2, 6);
+		SF.addGBCToCP(cPane, playTick, 0, 3, 6);
+		SF.addGBCToCP(cPane, keepRunning, 0, 4, 6);
+		SF.addGBCToCP(cPane, fullscreen, 0, 5, 6);
 
 		//Buttons
-		SF.addGBCToCP(cPane, startButton, 0,6,6);
-		SF.addGBCToCP(cPane, aboutButton, 0,7,6);
+		SF.addGBCToCP(cPane, startButton, 0, 6, 6);
+		SF.addGBCToCP(cPane, aboutButton, 0, 7, 6);
 
 		//Status label
-		SF.addGBCToCP(cPane, statusLabel, 0,8,6);
+		SF.addGBCToCP(cPane, statusLabel, 0, 8, 6);
 	}
 
 	void setStartButtonState(boolean state) {
 		startButton.setEnabled(state);
-	}
-
-	Image getIcon() {
-		return icon;
 	}
 
 }
