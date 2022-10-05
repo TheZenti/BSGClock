@@ -1,9 +1,9 @@
-package zentigame.bsgclock;
+package de.zentigame.bsgclock;
 
 import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
-import zentigame.AboutDialog;
-import zentigame.SF;
+import de.zentigame.AboutDialog;
+import de.zentigame.SF;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,7 +60,7 @@ public class MainMenu {
 	       // handle exception
 	    }
 
-		icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/zentigame/bsgclock/BSGClock.png"));
+		icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/BSGClock.png"));
 		initMainMenu();
 		String aboutDialogMessage = "This program is using LWJGL, http://lwjgl.org";
 		aboutDialog = new AboutDialog(mainMenu, "BSGClock", version, "2011", aboutDialogMessage);

@@ -1,4 +1,4 @@
-package zentigame;
+package de.zentigame;
 
 import java.awt.Container;
 import java.awt.Font;
