@@ -1,4 +1,4 @@
-package zentigame.bsgclock;
+package de.zentigame.bsgclock;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import de.zentigame.sound.SoundPlayer;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
@@ -20,7 +21,6 @@ import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
-import zentigame.sound.SoundPlayer;
 import de.matthiasmann.twl.utils.PNGDecoder;
 
 
@@ -679,12 +679,12 @@ public class BSGClock implements Runnable {
 	}
 
 	private ByteBuffer[] retrieveIcon() throws IOException {
-		InputStream is = Objects.requireNonNull(parent.getClass().getResource("/zentigame/bsgclock/BSGClock.png")).openStream();
+		InputStream is = Objects.requireNonNull(parent.getClass().getResource("/de/zentigame/bsgclock/BSGClock.png")).openStream();
 		ByteBuffer b32, b16;
 
 		b32 = decodeIcon(is);
 
-		is = Objects.requireNonNull(parent.getClass().getResource("/zentigame/bsgclock/BSGClock16.png")).openStream();
+		is = Objects.requireNonNull(parent.getClass().getResource("/de/zentigame/bsgclock/BSGClock16.png")).openStream();
 		b16 = decodeIcon(is);
 
 		return new ByteBuffer[] {b16, b32};

@@ -1,4 +1,4 @@
-package zentigame;
+package de.zentigame;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -18,7 +18,7 @@ public class SwingFunctions {
 		addGBCToCP(contentPane, component, x, y, 1, GridBagConstraints.WEST,
 				GridBagConstraints.BOTH, inset);
 	}
-	
+
 	public static void addGBCToCP(Container contentPane, Component component,
 			int x, int y, double weightx, double weighty) {
 		addGBCToCP(contentPane, component, x, y, 1, GridBagConstraints.WEST,
@@ -76,7 +76,7 @@ public class SwingFunctions {
 		gridBagConstraints.fill = fillBehaviour;
 		contentPane.add(component, gridBagConstraints);
 	}
-	
+
 	public static void addGBCToCP(Container contentPane, Component component, GridBagConstraints gbc)
 	{
 		contentPane.add(component, gbc);
