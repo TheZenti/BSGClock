@@ -11,11 +11,7 @@ public class SoundPlayer {
 	}
 
 	public static void playBackgroundMusic(final Audio music, final float pitch, final float gain, final boolean loop) {
-		new Thread() {
-			public void run() {
-				music.playAsMusic(pitch, gain, loop);
-			}
-		}.start();
+		new Thread(() -> music.playAsMusic(pitch, gain, loop)).start();
 	}
 
 	public static void playEffect(final Audio sound) {
@@ -23,18 +19,10 @@ public class SoundPlayer {
 	}
 
 	public static void playEffect(final Audio sound, final float pitch, final float gain, final boolean loop) {
-		new Thread() {
-			public void run() {
-				sound.playAsSoundEffect(pitch, gain, loop);
-			}
-		}.start();
+		new Thread(() -> sound.playAsSoundEffect(pitch, gain, loop)).start();
 	}
 
 	public static void playEffect(final Audio sound, final float pitch, final float gain, final boolean loop, final float x, final float y, final float z) {
-		new Thread() {
-			public void run() {
-				sound.playAsSoundEffect(pitch, gain, loop, x, y, z);
-			}
-		}.start();
+		new Thread(() -> sound.playAsSoundEffect(pitch, gain, loop, x, y, z)).start();
 	}
 }
